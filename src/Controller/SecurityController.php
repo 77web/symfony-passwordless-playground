@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,11 +29,20 @@ class SecurityController extends AbstractController
         LoginLinkHandlerInterface $loginLinkHandler,
         UserRepository $userRepository,
         NotifierInterface $notifier,
+        EntityManagerInterface $em,
         Request $request,
     ): Response {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
             $user = $userRepository->findOneBy(['email' => $email]);
+            if ($user === null) {
+                $user = new User();
+                $user->setEmail($email);
+                $user->setRoles(['ROLE_USER']);
+                $user->setPassword('dummy');
+                $em->persist($user);
+                $em->flush();
+            }
 
             $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
 
