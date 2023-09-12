@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Notification\MyCustomLoginLinkNotification;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,9 +47,8 @@ class SecurityController extends AbstractController
 
             $loginLinkDetails = $loginLinkHandler->createLoginLink($user);
 
-            $notification = new LoginLinkNotification(
+            $notification = new MyCustomLoginLinkNotification(
                 $loginLinkDetails,
-                'Welcome to my website',
             );
             $recipient = new Recipient($user->getEmail());
             $notifier->send($notification, $recipient);
